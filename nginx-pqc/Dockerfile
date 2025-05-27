@@ -18,6 +18,8 @@ RUN apt-get update && \
     automake \
     autoconf \
     git \
+    ca-certificates \
+    && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # --- Build OpenSSL (Stage 1) ---
@@ -28,7 +30,6 @@ RUN cd /usr/local/src && \
     ./config --prefix=${OPENSSL_PREFIX} --openssldir=${OPENSSL_PREFIX}/ssl && \
     make -j$(nproc) && \
     make install_sw
-# Do not clean OpenSSL source yet, Nginx needs it
 
 # --- Build Nginx (Stage 2) ---
 RUN cd /usr/local/src && \

@@ -19,6 +19,8 @@ RUN apt-get update && \
     iputils-ping \
     dnsutils \
     net-tools \
+    ca-certificates \
+    && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and compile OpenSSL
@@ -39,6 +41,6 @@ ENV LD_LIBRARY_PATH=${OPENSSL_PREFIX}/lib64:$LD_LIBRARY_PATH
 RUN openssl version
 
 # Kopieren Sie das Server-Zertifikat, um es für curl-Tests zu verwenden (optional, für --cacert)
-COPY ./nginx-pqc/nginx_config/ssl/server.crt /etc/ssl/certs/proxy_server.crt
+# COPY ./nginx-pqc/nginx_config/ssl/server.crt /etc/ssl/certs/proxy_server.crt
 
 CMD ["sleep", "infinity"]

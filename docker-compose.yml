@@ -1,4 +1,4 @@
-# pqc-docker-test/docker-compose.yml
+# pq-tls-reverse-proxy/docker-compose.yml
 version: '3.8'
 
 networks:
@@ -21,9 +21,9 @@ services:
     build:
       context: ./nginx-pqc
       dockerfile: Dockerfile
-      args: # Sie können hier Versionen überschreiben
-        OPENSSL_VERSION: 3.3.0
-        NGINX_VERSION: 1.26.1
+      args:
+        OPENSSL_VERSION: 3.5.0
+        NGINX_VERSION: 1.28.0
     container_name: pqc_nginx_proxy
     ports:
       - "80:80"
@@ -44,7 +44,7 @@ services:
       context: ./client-pqc
       dockerfile: Dockerfile
       args:
-        OPENSSL_VERSION: 3.3.0 # Stellen Sie sicher, dass dies mit der in nginx-pqc verwendeten Version übereinstimmt
+        OPENSSL_VERSION: 3.5.0
     container_name: pqc_client_pqc
     volumes: # Mounten Sie das generierte Zertifikat, damit curl es verwenden kann
       - ./nginx-pqc/nginx_config/ssl/server.crt:/etc/ssl/certs/proxy_server.crt:ro

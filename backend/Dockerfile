@@ -6,6 +6,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
+    ca-certificates \
     && pip3 install Flask \
     && rm -rf /var/lib/apt/lists/*
 

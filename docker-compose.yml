@@ -1,6 +1,4 @@
 # pq-tls-reverse-proxy/docker-compose.yml
-version: '3.8'
-
 networks:
   frontend_net:
     driver: bridge

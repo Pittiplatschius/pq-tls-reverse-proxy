@@ -33,7 +33,7 @@ RUN cd /usr/local/src && \
 
 # --- Build Nginx (Stage 2) ---
 RUN cd /usr/local/src && \
-    wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && \
+    wget https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && \
     tar -xzf nginx-${NGINX_VERSION}.tar.gz && \
     cd nginx-${NGINX_VERSION} && \
     ./configure --prefix=/opt/nginx-pq \

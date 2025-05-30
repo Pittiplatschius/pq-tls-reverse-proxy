@@ -1,0 +1,59 @@
+root@4c39adb78676:/# curl -v https://nginx-proxy -k
+*   Trying 172.19.0.2:443...
+* Connected to nginx-proxy (172.19.0.2) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* TLSv1.0 (OUT), TLS header, Certificate Status (22):
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS header, Certificate Status (22):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS header, Finished (20):
+* TLSv1.3 (IN), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+* TLSv1.2 (OUT), TLS header, Finished (20):
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* ALPN, server accepted to use http/1.1
+* Server certificate:
+*  subject: CN=pqc.tls.proxy; O=PQCTest; C=DE
+*  start date: May 26 20:48:09 2025 GMT
+*  expire date: May 26 20:48:09 2026 GMT
+*  issuer: CN=pqc.tls.proxy; O=PQCTest; C=DE
+*  SSL certificate verify result: self-signed certificate (18), continuing anyway.
+* TLSv1.2 (OUT), TLS header, Supplemental data (23):
+> GET / HTTP/1.1
+> Host: nginx-proxy
+> User-Agent: curl/7.81.0
+> Accept: */*
+>
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* old SSL session ID is stale, removing
+* TLSv1.2 (IN), TLS header, Supplemental data (23):
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 200 OK
+< Server: nginx/1.28.0
+< Date: Fri, 30 May 2025 09:47:09 GMT
+< Content-Type: application/json
+< Content-Length: 249
+< Connection: keep-alive
+<
+{"server_info":{"hostname":"a4672f3a5bed","os":"Linux","os_version":"#1 SMP Fri Nov 29 17:22:03 UTC 2024"},"server_time":"2025-05-30T09:47:09.085104Z","status":"online","tls":{"cipher":"unbekannt","post_quantum_enabled":true,"version":"unbekannt"}}
+* Connection #0 to host nginx-proxy left intact
+
+#########
+LOGS
+#########
+
+172.19.0.4 - - [30/May/2025:09:47:09 +0000] "GET / HTTP/1.1" 200 249 "-" "curl/7.81.0" "-" TLSv1.3 TLS_AES_256_GCM_SHA384 X25519MLKEM768:X25519:prime256v1:X448:secp384r1:secp521r1:ffdhe2048:ffdhe3072

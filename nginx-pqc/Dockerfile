@@ -53,7 +53,9 @@ RUN cd /usr/local/src && \
                 --with-pcre \
                 --with-openssl=${OPENSSL_SRC_DIR} \
                 --with-cc-opt="-I${OPENSSL_PREFIX}/include" \
-                --with-ld-opt="-L${OPENSSL_PREFIX}/lib64 -Wl,-rpath,${OPENSSL_PREFIX}/lib64" && \
+                # dynamische lib env für windows,unix und mac
+                --with-ld-opt="-L${OPENSSL_PREFIX}/lib -L${OPENSSL_PREFIX}/lib64 -Wl,-rpath,${OPENSSL_PREFIX}/lib -Wl,-rpath,${OPENSSL_PREFIX}/lib64" && \
+               # --with-ld-opt="-L${OPENSSL_PREFIX}/lib64 -Wl,-rpath,${OPENSSL_PREFIX}/lib64" && \
     make -j$(nproc) && \
     make install && \
     rm -rf /usr/local/src/*

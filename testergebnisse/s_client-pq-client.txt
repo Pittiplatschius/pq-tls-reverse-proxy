@@ -1,0 +1,104 @@
+root@4c39adb78676:/# openssl s_client -connect nginx-proxy:443 -groups X25519MLKEM768 -tls1_3 -servername pqc.tls.proxy
+Connecting to 172.19.0.2
+CONNECTED(00000003)
+depth=0 CN=pqc.tls.proxy, O=PQCTest, C=DE
+verify error:num=18:self-signed certificate
+verify return:1
+depth=0 CN=pqc.tls.proxy, O=PQCTest, C=DE
+verify return:1
+---
+Certificate chain
+ 0 s:CN=pqc.tls.proxy, O=PQCTest, C=DE
+   i:CN=pqc.tls.proxy, O=PQCTest, C=DE
+   a:PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption
+   v:NotBefore: May 26 20:48:09 2025 GMT; NotAfter: May 26 20:48:09 2026 GMT
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIDTzCCAjegAwIBAgIUEmzaSkq1/g140Cvh+06d4M958o4wDQYJKoZIhvcNAQEL
+BQAwNzEWMBQGA1UEAwwNcHFjLnRscy5wcm94eTEQMA4GA1UECgwHUFFDVGVzdDEL
+MAkGA1UEBhMCREUwHhcNMjUwNTI2MjA0ODA5WhcNMjYwNTI2MjA0ODA5WjA3MRYw
+FAYDVQQDDA1wcWMudGxzLnByb3h5MRAwDgYDVQQKDAdQUUNUZXN0MQswCQYDVQQG
+EwJERTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAPq7UhB2jJqXNRZj
+24F8OOaZCSXsgxrnBD4vMq+bSssjsbMVKHKGhzwWxfMQz3r8UgAtons55VBGRuCf
+OFurpeGNIgkX/THFRLntth2e2AWcm6gyYc+LgJ6Gny33NftZP6sv0sKFYhdVIlON
+p7eoUOiHJsq2IN2DuzBnew6P8p2Rk9xZnhiwLB+XEhJIbjZQGR+SZ0nqsa5EredK
+lgZsOFnZ2G2zfic19YUHVj0URjpnlJxG350trBPeveha/UjS5RV8bhW0SixjZsK9
+I1UqVdZCl3HvF3VI+tsdynXmK9izolbUiFw4klAwle0MXWy/QGugfqlRMAIZej9P
+eLF2n/MCAwEAAaNTMFEwHQYDVR0OBBYEFFeRDw3zCF4MRVbK3MgPQZqw807xMB8G
+A1UdIwQYMBaAFFeRDw3zCF4MRVbK3MgPQZqw807xMA8GA1UdEwEB/wQFMAMBAf8w
+DQYJKoZIhvcNAQELBQADggEBAFgMApE4ZCvpslwQO7RB9K0ow7O4iiEhd74UmfK0
+qgKW1Nr0DAxkVa5CA+sdjobsV+Ew4lz/w4Aes+479LzeIpQsbMemMr859zG4rvkM
+LCXNHmhL/bXjatX35x+nZblvgCI5GDHlUTh/+9gsrc2lxQVtDZytnkO4a5rur5Gy
+HY0Cgkg5Gkh06KwmLfkWfFtCYJ+xKqdvU3nen1wgqtkZ70/MhGVkNqdjbcjDwHoz
+S3a6mK4N90yN8fTDvFs6drMnfy9Cq/1P5R11oNAnu4h5nUDJeLp3MYOuU6sRjWFh
+jG2ii1V0bPHwLhR0Eq4FRO4Sq0rHYpd6BYdY6eFwqctttk8=
+-----END CERTIFICATE-----
+subject=CN=pqc.tls.proxy, O=PQCTest, C=DE
+issuer=CN=pqc.tls.proxy, O=PQCTest, C=DE
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: rsa_pss_rsae_sha256
+Negotiated TLS1.3 group: X25519MLKEM768
+---
+SSL handshake has read 2499 bytes and written 1495 bytes
+Verification error: self-signed certificate
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Protocol: TLSv1.3
+Server public key is 2048 bit
+This TLS version forbids renegotiation.
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 18 (self-signed certificate)
+---
+---
+Post-Handshake New Session Ticket arrived:
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Session-ID: 66A65B4BCEAD762CE0E7CF6615ECD3D8255F655B68A783710E0DC7B57C173B8D
+    Session-ID-ctx:
+    Resumption PSK: 8D89A1C33B18D48C0FE808056189F6D4BC6F27A66299F230BA8CB7DE45F6B1C17696C0D0E4BB512241E79659FCB9C015
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 86400 (seconds)
+    TLS session ticket:
+    0000 - 3a 98 5c 85 80 4b 20 7b-93 56 05 d8 61 8c 8a 06   :.\..K {.V..a...
+    0010 - b9 df d4 91 35 dd 35 e7-a3 9a 15 96 6d d4 30 e4   ....5.5.....m.0.
+
+    Start Time: 1748596896
+    Timeout   : 7200 (sec)
+    Verify return code: 18 (self-signed certificate)
+    Extended master secret: no
+    Max Early Data: 0
+---
+read R BLOCK
+---
+Post-Handshake New Session Ticket arrived:
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Session-ID: 78FA22EE72033A9714B223A0D3720F73592DFBA8D169006225440E8CE176AFBE
+    Session-ID-ctx:
+    Resumption PSK: 20B4565B200EF46BD9AE09EBD8EF6A682E254513251F9B7AC33B33678F774EA46B353FE0A24A219E8BC6F96D7B1C57A6
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 86400 (seconds)
+    TLS session ticket:
+    0000 - e5 7d f3 92 41 a0 cb 25-75 fa ea 8e be bf 8b 42   .}..A..%u......B
+    0010 - ae 6d 5c 3e 66 a1 e3 32-66 58 ed 84 b9 39 2c 23   .m\>f..2fX...9,#
+
+    Start Time: 1748596896
+    Timeout   : 7200 (sec)
+    Verify return code: 18 (self-signed certificate)
+    Extended master secret: no
+    Max Early Data: 0
+---
+read R BLOCK
+closed

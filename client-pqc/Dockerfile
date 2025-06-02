@@ -36,7 +36,7 @@ RUN cd /usr/local/src && \
 # Set environment variables for the custom OpenSSL
 ENV PATH=${OPENSSL_PREFIX}/bin:$PATH
 # ENV LD_LIBRARY_PATH=${OPENSSL_PREFIX}/lib64:$LD_LIBRARY_PATH
-# dynamische lib env für windows,unix und mac
+# dynamic lib env for windows,unix and mac
 ENV LD_LIBRARY_PATH=${OPENSSL_PREFIX}/lib:${OPENSSL_PREFIX}/lib64:$LD_LIBRARY_PATH
 
 # Verify installation

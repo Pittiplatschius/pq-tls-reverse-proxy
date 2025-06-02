@@ -1,16 +1,15 @@
-root@d8e7be1b2c72:/# openssl s_client -connect nginx-proxy:443 -tls1_3 -servername pqc.tls.proxy
-Connecting to 172.20.0.2
+root@8eb76b6ff97b:/# openssl s_client -connect nginx-proxy:443 -tls1_3 -servername proxy.pqc.test
 CONNECTED(00000003)
-depth=0 CN=pqc.tls.proxy, O=PQCTest, C=DE
+depth=0 CN = pqc.tls.proxy, O = PQCTest, C = DE
 verify error:num=18:self-signed certificate
 verify return:1
-depth=0 CN=pqc.tls.proxy, O=PQCTest, C=DE
+depth=0 CN = pqc.tls.proxy, O = PQCTest, C = DE
 verify return:1
 ---
 Certificate chain
- 0 s:CN=pqc.tls.proxy, O=PQCTest, C=DE
-   i:CN=pqc.tls.proxy, O=PQCTest, C=DE
-   a:PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption
+ 0 s:CN = pqc.tls.proxy, O = PQCTest, C = DE
+   i:CN = pqc.tls.proxy, O = PQCTest, C = DE
+   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
    v:NotBefore: May 26 20:48:09 2025 GMT; NotAfter: May 26 20:48:09 2026 GMT
 ---
 Server certificate
@@ -34,21 +33,20 @@ HY0Cgkg5Gkh06KwmLfkWfFtCYJ+xKqdvU3nen1wgqtkZ70/MhGVkNqdjbcjDwHoz
 S3a6mK4N90yN8fTDvFs6drMnfy9Cq/1P5R11oNAnu4h5nUDJeLp3MYOuU6sRjWFh
 jG2ii1V0bPHwLhR0Eq4FRO4Sq0rHYpd6BYdY6eFwqctttk8=
 -----END CERTIFICATE-----
-subject=CN=pqc.tls.proxy, O=PQCTest, C=DE
-issuer=CN=pqc.tls.proxy, O=PQCTest, C=DE
+subject=CN = pqc.tls.proxy, O = PQCTest, C = DE
+issuer=CN = pqc.tls.proxy, O = PQCTest, C = DE
 ---
 No client certificate CA names sent
 Peer signing digest: SHA256
-Peer signature type: rsa_pss_rsae_sha256
-Negotiated TLS1.3 group: X25519MLKEM768
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
 ---
-SSL handshake has read 2499 bytes and written 1553 bytes
+SSL handshake has read 1421 bytes and written 328 bytes
 Verification error: self-signed certificate
 ---
 New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
-Protocol: TLSv1.3
 Server public key is 2048 bit
-This TLS version forbids renegotiation.
+Secure Renegotiation IS NOT supported
 Compression: NONE
 Expansion: NONE
 No ALPN negotiated
@@ -60,18 +58,18 @@ Post-Handshake New Session Ticket arrived:
 SSL-Session:
     Protocol  : TLSv1.3
     Cipher    : TLS_AES_256_GCM_SHA384
-    Session-ID: 87D953DACAFFF213FE33F528E95777092A3FA70A8509EF50A468E0342BD77F44
+    Session-ID: 223258E9D1D27F2AD93885365897755051A4F8960E606F559F505ED0A5EB79B2
     Session-ID-ctx:
-    Resumption PSK: 5D6F424B5258ECB872C85358CE8FAEC39C26A48CA5A5C85CB33EF73DC6091DB9FDA594DB490452C95E0509AFFADC6873
+    Resumption PSK: 264C3C5C248CE98A6A6C612A3A5ADF1D2D389BDC87EE8D6F614E06C7355A4BB7A0689ADB263BAB5E1F06AB85926C7D9A
     PSK identity: None
     PSK identity hint: None
     SRP username: None
     TLS session ticket lifetime hint: 86400 (seconds)
     TLS session ticket:
-    0000 - 6a 8b 60 ad ac d7 7f 6c-80 37 4c 84 92 85 2a 28   j.`....l.7L...*(
-    0010 - a2 56 b3 d9 33 d0 62 6e-c0 e8 41 69 34 9b 9a 2b   .V..3.bn..Ai4..+
+    0000 - 89 a7 c6 e4 9e 2b 18 75-ab b0 49 b1 b2 e9 85 48   .....+.u..I....H
+    0010 - 46 c4 29 b5 40 a2 f3 60-79 5f 5e 8a de d6 d2 fc   F.).@..`y_^.....
 
-    Start Time: 1748851902
+    Start Time: 1748854790
     Timeout   : 7200 (sec)
     Verify return code: 18 (self-signed certificate)
     Extended master secret: no
@@ -83,18 +81,18 @@ Post-Handshake New Session Ticket arrived:
 SSL-Session:
     Protocol  : TLSv1.3
     Cipher    : TLS_AES_256_GCM_SHA384
-    Session-ID: 8038D740E675EBF89A7BE067C7ECFC3018778EE9933F973F0E42397913B317D0
+    Session-ID: C64E7AF8E6E205EE5A3C065DD4C38ACF29C12381B25F6825FB015238E320E9F9
     Session-ID-ctx:
-    Resumption PSK: CC84867A140E30D50618C9F310BCAF9D7493135E370AE8B9927F0D675EEFE2A85EC968FF9C02F690B74E95FEE6475665
+    Resumption PSK: 7D76C78A1BA227E51A56DC5DA22DC703E84A1DED5B49AE4A4E443EAA1E866F3997E7E19AE229BF50ED4D42340C833C43
     PSK identity: None
     PSK identity hint: None
     SRP username: None
     TLS session ticket lifetime hint: 86400 (seconds)
     TLS session ticket:
-    0000 - a0 d3 29 3d 5b af 5d 50-08 63 33 6d 88 f3 ea 5d   ..)=[.]P.c3m...]
-    0010 - d6 ad cc 78 f4 57 41 75-1f 5f be 48 b4 04 46 c6   ...x.WAu._.H..F.
+    0000 - 96 82 c5 80 47 6b ef 5c-b7 ed bc 73 23 cc bd 24   ....Gk.\...s#..$
+    0010 - 7e 84 90 45 04 5a 2b 82-61 fe 98 48 d2 7e ce e8   ~..E.Z+.a..H.~..
 
-    Start Time: 1748851902
+    Start Time: 1748854790
     Timeout   : 7200 (sec)
     Verify return code: 18 (self-signed certificate)
     Extended master secret: no
@@ -106,4 +104,4 @@ read R BLOCK
 LOGS
 #########
 
-172.20.0.4 - - [02/Jun/2025:08:11:47 +0000] "" 400 0 "-" "-" "-" TLSv1.3 TLS_AES_256_GCM_SHA384 X25519MLKEM768:X25519:prime256v1:X448:secp384r1:secp521r1:ffdhe2048:ffdhe3072
+172.20.0.4 - - [02/Jun/2025:09:00:23 +0000] "" 400 0 "-" "-" "-" TLSv1.3 TLS_AES_256_GCM_SHA384 X25519:prime256v1:X448:secp521r1:secp384r1:ffdhe2048:ffdhe3072:ffdhe4096:ffdhe6144:ffdhe8192

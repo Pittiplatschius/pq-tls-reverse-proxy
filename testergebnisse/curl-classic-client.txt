@@ -1,4 +1,4 @@
-root@d8e7be1b2c72:/# curl -v https://nginx-proxy -k
+root@8eb76b6ff97b:/# curl -v https://nginx-proxy -k
 *   Trying 172.20.0.2:443...
 * Connected to nginx-proxy (172.20.0.2) port 443 (#0)
 * ALPN, offering h2
@@ -8,7 +8,6 @@ root@d8e7be1b2c72:/# curl -v https://nginx-proxy -k
 * TLSv1.2 (IN), TLS header, Certificate Status (22):
 * TLSv1.3 (IN), TLS handshake, Server hello (2):
 * TLSv1.2 (IN), TLS header, Finished (20):
-* TLSv1.3 (IN), TLS change cipher, Change cipher spec (1):
 * TLSv1.2 (IN), TLS header, Supplemental data (23):
 * TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
 * TLSv1.2 (IN), TLS header, Supplemental data (23):
@@ -44,16 +43,16 @@ root@d8e7be1b2c72:/# curl -v https://nginx-proxy -k
 * Mark bundle as not supporting multiuse
 < HTTP/1.1 200 OK
 < Server: nginx/1.28.0
-< Date: Mon, 02 Jun 2025 08:13:09 GMT
+< Date: Mon, 02 Jun 2025 08:58:33 GMT
 < Content-Type: application/json
 < Content-Length: 249
 < Connection: keep-alive
 <
-{"server_info":{"hostname":"2c461675e305","os":"Linux","os_version":"#1 SMP Fri Nov 29 17:22:03 UTC 2024"},"server_time":"2025-06-02T08:13:09.794103Z","status":"online","tls":{"cipher":"unbekannt","post_quantum_enabled":true,"version":"unbekannt"}}
+{"server_info":{"hostname":"cedab2a3948d","os":"Linux","os_version":"#1 SMP Fri Nov 29 17:22:03 UTC 2024"},"server_time":"2025-06-02T08:58:33.262124Z","status":"online","tls":{"cipher":"unbekannt","post_quantum_enabled":true,"version":"unbekannt"}}
 * Connection #0 to host nginx-proxy left intact
 
 #########
 LOGS
 #########
 
-172.20.0.4 - - [02/Jun/2025:08:13:09 +0000] "GET / HTTP/1.1" 200 249 "-" "curl/7.81.0" "-" TLSv1.3 TLS_AES_256_GCM_SHA384 X25519MLKEM768:X25519:prime256v1:X448:secp384r1:secp521r1:ffdhe2048:ffdhe3072
+172.20.0.4 - - [02/Jun/2025:08:58:33 +0000] "GET / HTTP/1.1" 200 249 "-" "curl/7.81.0" "-" TLSv1.3 TLS_AES_256_GCM_SHA384 X25519:prime256v1:X448:secp521r1:secp384r1:ffdhe2048:ffdhe3072:ffdhe4096:ffdhe6144:ffdhe8192

@@ -1,25 +1,35 @@
 # Testprotokoll: Hybrider PQC Nginx Reverse Proxy
 Dieses Dokument protokolliert die Testergebnisse des hybriden Post-Quantum Nginx Reverse Proxy Setups.
 
-**Datum des Tests:** 27.05.2025
-
 **Testumgebung:**
 * Nginx-Proxy-Hostname (intern): `nginx-proxy`
+  * [ssl-conf](/nginx-pqc/nginx_config/conf/snippets/ssl-params.conf)
+  * [pqc-conf](/nginx-pqc/nginx_config/conf/sites-available/pqc-proxy.conf)
+  * [nginx-conf](/nginx-pqc/nginx_config/conf/nginx.conf)
 * Zertifikat CN / Servername für SNI: `pqc.tls.proxy`
+  * klassisch und selbstsigniert
 * KEMs
   * Post-Quantum: `X25519MLKEM768`
   * Klassisch: `X25519`
 * OpenSSL-Version
   * PQC-Client: `3.5.0`
-  * Klassischer Client: `3.0.2 - System-Version`
+  * Nginx-Proxy: `3.5.0`
+  * Klassischer Client: `3.0.2`
+
+**Forschungsfrage:**
+* Inwiefern beeinflusst ein hybrider PQC-Nginx-Reverse-Proxy (PQC-KEM, klassisches Zertifikat) die TLS-Sicherheit und gewährleistet gleichzeitig die Interoperabilität mit nicht-PQC-fähigen Clients sowie die Kompatibilität mit einer klassischen PKI?
+
+**Hypothesen:**
+* Die Vertraulichkeit der ausgetauschten Sitzungsschlüssel ist bei PQC-fähigen Clients durch den PQC-KEM auch dann noch gegeben, wenn klassische Algorithmen kompromittiert sind.
+* Die Authentizität des Servers, gewährleistet durch das klassische Zertifikat, bleibt von der Einführung des PQC-KEM unberührt und auf dem gleichen Sicherheitsniveau wie bei klassischen TLS-Implementierungen.
+* Für nicht-PQC-fähige Clients findet keine wahrnehmbare Veränderung im Verbindungsaufbau oder in der Verbindungsqualität statt.
+* Prozesse wie Zertifikatsausstellung, -validierung und -management bleiben für den Serverbetreiber und die Clients unverändert und funktionieren wie bei klassischen TLS-Implementierungen.
 
 ---
 
 ## Testfall 1: PQC-fähiger Client (`client-pqc`)
-Ziel: Überprüfung, ob der PQC-fähige Client eine TLS-Verbindung mit einem 
-Post-Quantum Key Exchange Mechanism (KEM) aushandelt.
 
-**Kommandos:**
+**Befehl:**
 (Ausgeführt im `client-pqc` Container)
 ```bash
 docker-compose exec client-pqc bash
@@ -28,22 +38,18 @@ docker-compose exec client-pqc bash
 ### 1.1 `openssl s_client` Test
 
 #### 1.1.1 Ziel 
-Das Ziel dieses Tests war es, nachzuweisen, dass ein PQC-fähiger Client erfolgreich 
-eine TLS-Verbindung mit dem Nginx-Reverse-Proxy aushandeln kann, 
-bei der ein hybrider Post-Quantum Key Exchange Mechanism (KEM) verwendet wird.
+Ziel des Tests ist ein Nachweis einer erfolgreichen TLS-Verbindung zwischen einem pq-fähigen Client und Nginx-Reverse-Proxy. Dabei soll ein hybrider Post-Quantum Key Exchange Mechanism (KEM) aus der [ssl-conf](/nginx-pqc/nginx_config/conf/snippets/ssl-params.conf) mit dem Nginx-Reverse-Proxy ausgehandelt und verwendet werden.
 
 #### 1.1.2 Methode
-Innerhalb des client-pqc Docker-Containers wurde openssl s_client 
-mit der expliziten Anforderung der hybriden Gruppe X25519MLKEM768 ausgeführt. 
-Der vollständige Befehl lautete:
+Innerhalb des client-pqc Docker-Containers wurde openssl s_client ausgeführt. Der vollständige Befehl lautete:
 ```bash
 openssl s_client -connect nginx-proxy:443 -tls1_3 -servername pqc.tls.proxy
 ```
 
 #### 1.1.3 Ergebnis
-Der TLS-Handshake wurde erfolgreich abgeschlossen.
-Die Analyse der [Ausgabe](testergebnisse/s_client-pq-client.txt) von openssl s_client zeigte 
-die folgenden entscheidenden Parameter für die ausgehandelte Verbindung:
+
+Der TLS-Handshake wurde erfolgreich durchgeführt.
+Die [Ausgabe](testergebnisse/s_client-pq-client.txt) von openssl s_client zeigt die folgenden entscheidenden Parameter für die ausgehandelte Verbindung:
 ```
 subject=CN=pqc.tls.proxy, O=PQCTest, C=DE
 issuer=CN=pqc.tls.proxy, O=PQCTest, C=DE
@@ -63,41 +69,25 @@ Verify return code: 18 (self-signed certificate)
 ```
 
 #### 1.1.4 Analyse
-Das Ergebnis bestätigt den Erfolg des hybriden Ansatzes. 
-Die Zeile Negotiated TLS1.3 group: X25519MLKEM768 belegt eindeutig, 
-dass der für die Sitzung verwendete Schlüssel sowohl auf dem klassischen 
-Elliptic-Curve-Algorithmus X25519 
-als auch auf dem Post-Quantum-Algorithmus ML-KEM (Kyber) basiert.
+Die Zeile Negotiated TLS1.3 group: `X25519MLKEM768` belegt eindeutig, dass der für die Sitzung verwendete Schlüssel sowohl auf dem klassischen Elliptic-Curve-Algorithmus X25519 als auch auf dem Post-Quantum-Algorithmus ML-KEM (Kyber) basiert.
 
-Gleichzeitig wurde die Verbindung über das moderne Protokoll TLSv1.3 
-mit der starken Cipher Suite TLS_AES_256_GCM_SHA384 aufgebaut. 
-Die Authentifizierung des Servers erfolgte, wie beabsichtigt, 
-über ein klassisches 2048-Bit-RSA-Zertifikat. 
+Gleichzeitig wurde die Verbindung über das moderne Protokoll TLSv1.3 mit der starken Cipher Suite `TLS_AES_256_GCM_SHA384` aufgebaut. Die Authentifizierung des Servers erfolgte, wie beabsichtigt, über ein klassisches 2048-Bit-RSA-Zertifikat. 
 
-Der erwartete Verifizierungsfehler (Verify return code: 18) resultiert 
-aus der Verwendung eines selbstsignierten Zertifikats in der Testumgebung 
-und beeinträchtigt nicht die Gültigkeit des Handshake-Tests.
+Der erwartete Verifizierungsfehler (Verify return code: 18) resultiert aus der Verwendung eines selbstsignierten Zertifikats in der Testumgebung und beeinträchtigt nicht die Gültigkeit des Handshake-Tests.
 
 ### 1.2 `curl` Test
 
 #### 1.2.1 Ziel
-Das Ziel dieses Tests war es, die Ende-zu-Ende-Konnektivität 
-mit einem Standard-HTTP-Client (curl) zu verifizieren. 
-Es sollte nachgewiesen werden, dass der Proxy eine TLS-Verbindung terminieren 
-und Anfragen korrekt zum Backend weiterleiten kann.
+Das Ziel dieses Tests war es, die Ende-zu-Ende-Konnektivität mit einem Standard-HTTP-Client (curl) zu verifizieren. Es sollte nachgewiesen werden, dass der Proxy eine TLS-Verbindung terminieren und Anfragen eines pq-fähigen Clients korrekt zum Backend weiterleiten kann.
 
 #### 1.2.2 Methode
-Innerhalb des client-pqc Containers wurde curl im Verbose-Modus (-v) ausgeführt. 
-Die Option -k wurde verwendet, um die Verifizierung des selbstsignierten Serverzertifikats 
-zu umgehen. Der Befehl lautete:
+Innerhalb des client-pqc Docker-Containers wurde curl im Verbose-Modus (-v) ausgeführt, Die Option -k wurde verwendet, um die Zertifikatsprüfung aufgrund des selbstsignierten Zertifikats zu deaktivieren. Der Befehl lautete:
 ```bash
 curl -v https://nginx-proxy -k
 ```
 
 #### 1.2.2 Ergebnis
-Der Test war erfolgreich. curl konnte eine TLS-Verbindung aufbauen und erhielt 
-eine HTTP/1.1 200 OK Antwort vom Server. [Vollständige Ausgabe](testergebnisse/curl-pq-client.txt)
-Die gekürzte Ausgabe zeigt die wesentlichen Schritte:
+Der Test war erfolgreich. Die [Ausgabe](testergebnisse/curl-pq-client.txt) von curl zeigt eine erfolgreich aufgebautet TLS-Verbindung und eine HTTP/1.1 200 OK Antwort vom Server. Die gekürzte Ausgabe zeigt die wesentlichen Schritte:
 ```
 * Connected to nginx-proxy (172.19.0.2) port 443 (#0)
 * SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
@@ -117,27 +107,14 @@ Die gekürzte Ausgabe zeigt die wesentlichen Schritte:
 ```
 
 #### 1.2.3 Analyse
-Das Ergebnis demonstriert die funktionale Korrektheit des Reverse-Proxy-Setups. 
-Ein Standard-Client wie curl kann sich erfolgreich über TLS 1.3 verbinden und 
-Daten mit dem Backend austauschen.
+Das Ergebnis demonstriert die funktionale Korrektheit des Reverse-Proxy-Setups. Ein Standard-Client wie curl kann sich erfolgreich über TLS 1.3 verbinden und Daten mit dem Backend austauschen.
 
-Die Verwendung der Option -k war notwendig, da das Test-Setup ein selbstsigniertes Zertifikat 
-nutzt, dessen Aussteller (issuer) dem Client unbekannt ist. Zudem umgeht -k 
-den Hostname-Mismatch-Fehler, der auftritt, weil der Client den Host nginx-proxy anfragt, 
-das Zertifikat aber auf pqc.tls.proxy ausgestellt ist.
+Die Verwendung der Option -k war notwendig, da das Test-Setup ein selbstsigniertes Zertifikat nutzt, dessen Aussteller (issuer) dem Client unbekannt ist. Zudem umgeht -k den Hostname-Mismatch-Fehler, der auftritt, weil der Client den Host nginx-proxy anfragt, das Zertifikat aber auf pqc.tls.proxy ausgestellt ist.
 
-Wichtig ist, dass curl selbst nicht direkt anzeigt, welcher Key Exchange Mechanism (KEM) 
-verwendet wurde. Um nachzuweisen, dass bei dieser curl-Anfrage vom PQC-Client tatsächlich 
-der hybride KEM X25519MLKEM768 zum Einsatz kam, muss dieses Ergebnis mit der Analyse 
-der Nginx Access Logs (siehe vorherige Tests) korreliert werden. 
-Die Logs bestätigen serverseitig, welcher KEM für die Verbindung von der IP-Adresse 
-des client-pqc Containers ausgehandelt wurde.
+Wichtig ist, dass curl selbst nicht direkt anzeigt, welcher Key Exchange Mechanism (KEM) verwendet wurde. Um nachzuweisen, dass bei dieser curl-Anfrage vom PQC-Client tatsächlich der hybride KEM X25519MLKEM768 zum Einsatz kam, muss dieses Ergebnis mit der Analyse der Nginx Access Logs (siehe letzte Zeile aus [Ausgabe](testergebnisse/curl-pq-client.txt)) korreliert werden. Der Logeintrag bestätigt serverseitig, welcher KEM für die Verbindung von der IP-Adresse des client-pqc Containers ausgehandelt wurde.
 
 ## Testfall 2: Klassischer Client (`client-classic`)
-Ziel: Überprüfung, ob der klassische Client eine TLS-Verbindung ohne 
-Post-Quantum Key Exchange Mechanism (KEM) aushandelt.
-
-**Kommandos:**
+**Befehl:**
 (Ausgeführt im `client-classic` Container)
 ```bash
 docker-compose exec client-classic bash
@@ -146,24 +123,16 @@ docker-compose exec client-classic bash
 ### 2.1 `openssl s_client` Test
 
 #### 2.1.1 Ziel
-Das Ziel dieses Tests war es, die Interoperabilität 
-des Nginx-Reverse-Proxys mit Clients nachzuweisen, 
-die keine Post-Quantum-Algorithmen unterstützen. 
-Es sollte verifiziert werden, dass ein solcher Client 
-eine sichere Verbindung über einen standardmäßigen, 
-klassischen TLS-Handshake erfolgreich aufbauen kann.
+Ziel des Tests ist ein Nachweis einer erfolgreichen TLS-Verbindung zwischen einem klassischen Client und Nginx-Reverse-Proxy. Dabei soll ein klassisches Key Exchange Mechanism (KEM) aus der [ssl-conf](/nginx-pqc/nginx_config/conf/snippets/ssl-params.conf) mit dem Nginx-Reverse-Proxy ausgehandelt und verwendet werden.
 
 #### 2.1.2 Methode
-Innerhalb des client-classic Docker-Containers wurde openssl s_client ausgeführt, 
-um eine TLS-Verbindung zum Nginx-Proxy zu initiieren. 
-Es wurden dabei keine spezifischen Post-Quantum-Gruppen angefordert.
+Innerhalb des client-classic Docker-Containers wurde openssl s_client ausgeführt. Der vollständige Befehl lautete:
 ```bash
-openssl s_client -connect nginx-proxy:443 -tls1_3 -servername proxy.pqc.test
+openssl s_client -connect nginx-proxy:443 -tls1_3 -servername pqc.tls.proxy
 ```
 
 #### 2.1.2 Ergebnis
-Der Verbindungsaufbau war erfolgreich. Der folgende Auszug aus 
-der Terminal-Ausgabe zeigt die entscheidenden Parameter des ausgehandelten Handshakes:
+Der TLS-Handshake wurde erfolgreich durchgeführt. Die [Ausgabe](testergebnisse/s_client-classic-client.txt) von openssl s_client zeigt die folgenden entscheidenden Parameter für die ausgehandelte Verbindung:
 ```
 subject=CN = pqc.tls.proxy, O = PQCTest, C = DE
 issuer=CN = pqc.tls.proxy, O = PQCTest, C = DE
@@ -183,41 +152,25 @@ Verify return code: 18 (self-signed certificate)
 ```
 
 #### 2.1.3 Analyse
-Das Ergebnis bestätigt die erfolgreiche Interoperabilität des Servers. 
-Die Zeile Server Temp Key: X25519, 253 bits ist der entscheidende Nachweis dafür, 
-dass ein rein klassischer Schlüsselaustauschmechanismus 
-(Elliptic-Curve Diffie-Hellman mit der Kurve X25519) verwendet wurde.
+Die Zeile Server Temp Key: X25519, 253 bits ist der entscheidende Nachweis dafür, dass ein rein klassischer Schlüsselaustauschmechanismus (Elliptic-Curve Diffie-Hellman mit der Kurve X25519) ausgehandelt und verwendet wurde.
 
-Dies demonstriert, dass der Nginx-Proxy korrekt auf einen 
-klassischen Algorithmus zurückfällt, wenn der Client keine PQC-Verfahren in seinem 
-ClientHello anbietet. Die Abwärtskompatibilität ist somit gewährleistet. 
-Die Verbindung wurde zudem, wie erwartet, über das moderne Protokoll TLS 1.3 
-mit einer starken Cipher Suite (TLS_AES_256_GCM_SHA384) gesichert. 
-Der protokollierte Verifizierungsfehler (Verify return code: 18) ist auf das im 
-Test-Setup verwendete selbstsignierte Zertifikat zurückzuführen und hat keinen 
-Einfluss auf die Gültigkeit des Handshake-Ergebnisses.
+Gleichzeitig wurde die Verbindung, wie erwartet, über das moderne Protokoll TLS 1.3 mit einer starken Cipher Suite (TLS_AES_256_GCM_SHA384) gesichert. Die Authentifizierung des Servers erfolgte, wie beabsichtigt, über ein klassisches 2048-Bit-RSA-Zertifikat.
+
+Der erwartete Verifizierungsfehler (Verify return code: 18) resultiert aus der Verwendung eines selbstsignierten Zertifikats in der Testumgebung und beeinträchtigt nicht die Gültigkeit des Handshake-Tests.
 
 ### 2.2 `curl` Test
 
 #### 2.2.1 Ziel
-Das Ziel dieses Tests war es, die vollständige Ende-zu-Ende-Konnektivität auf 
-Anwendungsebene für einen nicht-PQC-fähigen Client zu verifizieren. 
-Es sollte gezeigt werden, dass ein Standard-HTTP-Tool (curl) eine Anfrage über 
-den Proxy senden und eine gültige Antwort vom Backend-Server empfangen kann.
+Das Ziel dieses Tests war es, die Ende-zu-Ende-Konnektivität mit einem Standard-HTTP-Client (curl) zu verifizieren. Es sollte nachgewiesen werden, dass der Proxy eine TLS-Verbindung terminieren und Anfragen eines klassischen Clients korrekt zum Backend weiterleiten kann.
 
 #### 2.2.2 Methode
-Innerhalb des client-classic Docker-Containers wurde curl im Verbose-Modus (-v) ausgeführt, 
-um eine HTTPS-GET-Anfrage zu senden. Die Option -k wurde verwendet, 
-um die Zertifikatsprüfung aufgrund des selbstsignierten Zertifikats und 
-des Hostname-Mismatches zu deaktivieren.
+Innerhalb des client-classic Docker-Containers wurde curl im Verbose-Modus (-v) ausgeführt, Die Option -k wurde verwendet, um die Zertifikatsprüfung aufgrund des selbstsignierten Zertifikats zu deaktivieren. Der Befehl lautete:
 ```bash
 curl -v https://nginx-proxy -k
 ```
 
 #### 2.2.2 Ergebnis
-Der Test war erfolgreich. curl konnte eine TLS 1.3 Verbindung aufbauen, 
-die Anfrage senden und eine HTTP/1.1 200 OK Antwort mit dem JSON-Payload 
-vom Backend empfangen. Die gekürzte Ausgabe zeigt die wesentlichen Schritte:
+Der Test war erfolgreich. Die [Ausgabe](testergebnisse/curl-classic-client.txt) von curl zeigt eine erfolgreich aufgebautet TLS-Verbindung und eine HTTP/1.1 200 OK Antwort vom Server. Die gekürzte Ausgabe zeigt die wesentlichen Schritte:
 ```
 * Connected to nginx-proxy (172.20.0.2) port 443 (#0)
 * SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
@@ -237,18 +190,11 @@ vom Backend empfangen. Die gekürzte Ausgabe zeigt die wesentlichen Schritte:
 ```
 
 #### 2.2.3 Analyse
-Dieses Ergebnis bestätigt die vollständige funktionale Interoperabilität 
-des Reverse-Proxy-Setups. Ein HTTP-Client ohne PQC-Fähigkeiten kann den gesamten 
-Kommunikationsweg (Client → Proxy → Backend → Client) erfolgreich durchlaufen.
+Dieses Ergebnis bestätigt die vollständige funktionale Interoperabilität des Reverse-Proxy-Setups. Ein HTTP-Client ohne PQC-Fähigkeiten kann den gesamten Kommunikationsweg (Client → Proxy → Backend → Client) erfolgreich durchlaufen.
 
-Die Verbindung wurde, wie die Ausgabe SSL connection using TLSv1.3 zeigt, 
-mit modernen Sicherheitsstandards aufgebaut. Die Notwendigkeit der -k Option ergibt sich, 
-wie im PQC-Client-Test, aus der Testumgebung mit einem selbstsignierten Zertifikat.
+Die Verwendung der Option -k war notwendig, da das Test-Setup ein selbstsigniertes Zertifikat nutzt, dessen Aussteller (issuer) dem Client unbekannt ist. Zudem umgeht -k den Hostname-Mismatch-Fehler, der auftritt, weil der Client den Host nginx-proxy anfragt, das Zertifikat aber auf pqc.tls.proxy ausgestellt ist.
 
-In Korrelation mit den Ergebnissen aus dem openssl s_client Test (siehe 2.1) und 
-den Nginx-Logs ist nachgewiesen, dass diese erfolgreiche HTTP-Transaktion über 
-eine Verbindung lief, deren Sitzungsschlüssel mit einem 
-klassischen Key Exchange Mechanism(X25519) gesichert wurde.
+Wichtig ist, dass curl selbst nicht direkt anzeigt, welcher Key Exchange Mechanism (KEM) verwendet wurde. Um nachzuweisen, dass bei dieser curl-Anfrage vom klassischen Client tatsächlich der klassische KEM X25519 zum Einsatz kam, muss dieses Ergebnis mit der Analyse der Nginx Access Logs (siehe letzte Zeile aus [Ausgabe](testergebnisse/curl-classic-client.txt)) korreliert werden. Der Logeintrag bestätigt serverseitig, welcher KEM für die Verbindung von der IP-Adresse des client-pqc Containers ausgehandelt wurde.
 
 ## 3. Performance-Analyse des TLS-Handshakes
 Um die Performance-Auswirkungen des hybriden PQC-Ansatzes zu quantifizieren, 
@@ -296,7 +242,7 @@ wenn er im Rahmen einer Aktualisierung auf eine moderne, hoch-optimierte Krypto-
 erfolgt. Die Wahl einer aktuellen Software-Basis kann den potenziellen 
 PQC-Overhead minimieren oder, wie in diesem Test gezeigt, sogar überkompensieren.
 
-## 5. Performance-Analyse: PQC-Overhead
+## 4. Performance-Analyse: PQC-Overhead
 
 Um den reinen Performance-Overhead des Post-Quantum-Algorithmus zu isolieren, 
 wurde ein direkter Vergleich auf Basis derselben Krypto-Bibliothek (OpenSSL 3.5.0) durchgeführt. 
@@ -304,7 +250,7 @@ Dabei wurde im `client-pqc` Container einmal ein klassischer Handshake (ECDHE mi
 einmal ein hybrider PQC-Handshake (X25519MLKEM768) erzwungen. 
 Die Tests liefen jeweils über eine Dauer von 60 Sekunden.
 
-### 5.1 Messergebnisse des isolierten Vergleichs
+### 4.1 Messergebnisse des isolierten Vergleichs
 
 | Metrik                            | Klassischer Handshake (X25519 auf neuer Lib) | Hybrider PQC-Handshake (X25519MLKEM768) | Veränderung (PQC-Overhead) |
 |:----------------------------------|:---------------------------------------------|:----------------------------------------|:---------------------------|
@@ -315,7 +261,7 @@ Die Tests liefen jeweils über eine Dauer von 60 Sekunden.
 
 *Tabelle 5.1: Direkter Performance-Vergleich zur Ermittlung des PQC-Overheads.*
 
-### 5.2 Analyse und Diskussion
+### 4.2 Analyse und Diskussion
 
 Der direkte Vergleich unter Verwendung derselben optimierten 
 OpenSSL-Bibliothek ermöglicht eine präzise Quantifizierung 

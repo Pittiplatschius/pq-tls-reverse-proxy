@@ -3,7 +3,7 @@ Dieses Dokument protokolliert die Testergebnisse des hybriden Post-Quantum Nginx
 
 **Testumgebung:**
 * Nginx-Proxy: `nginx-proxy`
-   * [pqc-conf](/nginx-pqc/nginx_config/conf/sites-available/pqc-proxy.conf)
+  * [pqc-conf](/nginx-pqc/nginx_config/conf/sites-available/pqc-proxy.conf)
   * [nginx-conf](/nginx-pqc/nginx_config/conf/nginx.conf)
 * Zertifikat CN / Servername für SNI: `pqc.tls.proxy`
   * klassisch und selbstsigniert
@@ -196,15 +196,14 @@ Die Verwendung der Option -k war notwendig, da das Test-Setup ein selbstsigniert
 Wichtig ist, dass curl selbst nicht direkt anzeigt, welcher Key Exchange Mechanism (KEM) verwendet wurde. Um nachzuweisen, dass bei dieser curl-Anfrage vom klassischen Client tatsächlich der klassische KEM X25519 zum Einsatz kam, muss dieses Ergebnis mit der Analyse der Nginx Access Logs (siehe letzte Zeile aus [Ausgabe](testergebnisse/curl-classic-client.txt)) korreliert werden. Der Logeintrag bestätigt serverseitig, welcher KEM für die Verbindung von der IP-Adresse des client-pqc Containers ausgehandelt wurde.
 
 ## 3. Performance-Analyse des TLS-Handshakes
-Um die Performance-Auswirkungen des hybriden PQC-Ansatzes zu quantifizieren, 
-wurde die Anzahl der möglichen TLS-Handshakes pro Sekunde gemessen. 
-Als Testwerkzeug kam `openssl s_time` mit einer Laufzeit von 60 Sekunden pro Testlauf zum Einsatz.
+Um die Performance-Auswirkungen des hybriden PQC-Ansatzes zu quantifizieren, wurde die Anzahl der möglichen TLS-Handshakes pro Sekunde gemessen.
 
 Es wurden zwei Szenarien verglichen:
-1.  **Klassischer Handshake:** Ein Client mit einer Standard-System-OpenSSL-Bibliothek, der einen klassischen KEM (ECDHE mit X25519) aushandelt.
-2.  **PQC-Handshake:** Ein Client mit einer neueren, PQC-fähigen OpenSSL-Bibliothek, der den hybriden KEM `X25519MLKEM768` aushandelt, was durch die Server-Logs verifiziert wurde.
+1. **Klassischer Handshake:** Ein Client mit OpenSSL (3.0.2) der den klassischen KEM `X25519` aushandelt.
+2. **PQC-Handshake:** Ein Client mit OpenSSL (3.5.0), der den hybriden KEM `X25519MLKEM768` aushandelt.
 
 ### 3.1 Methode
+Als Testwerkzeug kam `openssl s_time` mit einer Laufzeit von 60 Sekunden pro Testlauf zum Einsatz. Der Befehl lautete:
 ```bash
 openssl s_time -connect nginx-proxy:443 -www / -new -time 60
 ```
@@ -222,24 +221,12 @@ Die durchgeführten Tests ergaben die folgenden Performance-Werte.
 *Tabelle 3.2: Performance-Vergleich von klassischem und 
 hybridem PQC-TLS-Handshake über unterschiedliche OpenSSL-Versionen.*
 
-### 3.3 Analyse und Diskussion
-Die Messergebnisse in Tabelle 5.1 zeigen das auf den ersten Blick unerwartete Resultat, 
-dass der TLS-Handshake mit dem hybriden PQC-Algorithmus `X25519MLKEM768` 
-eine um etwa 7 % höhere Performance aufweist als der rein klassische Handshake.
+### 3.3 Analyse
+Die Messergebnisse in Tabelle 5.1 zeigen das auf den ersten Blick unerwartete Resultat, dass der TLS-Handshake mit dem hybriden PQC-Algorithmus `X25519MLKEM768` eine um etwa 7 % höhere Performance aufweist als der rein klassische Handshake.
 
-Diese Leistungssteigerung ist jedoch nicht auf den PQC-Algorithmus selbst zurückzuführen. 
-Vielmehr verdeutlicht das Ergebnis den signifikanten Einfluss der zugrundeliegenden 
-Kryptographie-Bibliothek. Der PQC-Test wurde mit einer neueren, 
-für moderne CPUs optimierten OpenSSL-Version durchgeführt, 
-während der klassische Test auf einer älteren System-Bibliothek lief. 
-Die allgemeinen Optimierungen in der neueren OpenSSL-Version sind so effektiv, 
-dass sie den zusätzlichen Rechenaufwand des Post-Quantum-Algorithmus kompensieren und 
-im Vergleich zur älteren Bibliothek sogar zu einer besseren Gesamtperformance führen.
+Diese Leistungssteigerung ist jedoch nicht auf den PQC-Algorithmus selbst zurückzuführen. Vielmehr verdeutlicht das Ergebnis den signifikanten Einfluss der zugrundeliegenden Kryptographie-Bibliothek und unterschiedlichen Version von OpenSSL. Der PQC-Test wurde mit einer neueren OpenSSL-Version durchgeführt, während der klassische Test auf einer älteren Version lief. Die allgemeinen Optimierungen in der neueren OpenSSL-Version sind so effektiv, dass sie den usätzlichen Rechenaufwand des Post-Quantum-Algorithmus kompensieren und im Vergleich zur älteren Bibliothek sogar zu einer besseren Gesamtperformance führen.
 
-**Fazit:** Der Einsatz von PQC muss nicht zwangsläufig zu einem Performance-Verlust führen, 
-wenn er im Rahmen einer Aktualisierung auf eine moderne, hoch-optimierte Krypto-Bibliothek 
-erfolgt. Die Wahl einer aktuellen Software-Basis kann den potenziellen 
-PQC-Overhead minimieren oder, wie in diesem Test gezeigt, sogar überkompensieren.
+**Fazit:** Der Einsatz von PQC muss nicht zwangsläufig zu einem Performance-Verlust führen, wenn er im Rahmen einer Aktualisierung auf eine moderne, hoch-optimierte Krypto-Bibliothek erfolgt.
 
 ## 4. Performance-Analyse: PQC-Overhead
 
@@ -284,16 +271,3 @@ als akzeptabel angesehen werden, insbesondere da er nur den einmaligen Handshake
 betrifft und nicht den Datendurchsatz bestehender Verbindungen. Die Ergebnisse zeigen, 
 dass eine Migration zu hybrider Post-Quantum-Kryptographie mit einem überschaubaren 
 und klar messbaren Performance-Aufwand möglich ist.
-
-### Für eine noch tiefere akademische Analyse (Optional)
-Um den **reinen Overhead des PQC-Algorithmus** zu isolieren,
-könnten Sie einen dritten Testlauf durchführen:
-
-* **Verwenden Sie den `client-pqc` Container** (mit der neuen OpenSSL-Version).
-* **Erzwingen Sie dort aber einen rein klassischen Handshake** (z.B. mit einer Konfigurationsdatei, die `Groups = X25519` setzt).
-
-Wenn Sie dann das Ergebnis von `(PQC auf neuer Lib)` mit `(Klassisch auf neuer Lib)` vergleichen,
-sehen Sie den wahren Performance-Unterschied der Algorithmen selbst,
-ohne den Einfluss der unterschiedlichen Bibliotheksversionen.
-Das wäre eine exzellente Ergänzung für Ihre Arbeit.
-

@@ -2,13 +2,12 @@
 Dieses Dokument protokolliert die Testergebnisse des hybriden Post-Quantum Nginx Reverse Proxy Setups.
 
 **Testumgebung:**
-* Nginx-Proxy-Hostname (intern): `nginx-proxy`
-  * [ssl-conf](/nginx-pqc/nginx_config/conf/snippets/ssl-params.conf)
-  * [pqc-conf](/nginx-pqc/nginx_config/conf/sites-available/pqc-proxy.conf)
+* Nginx-Proxy: `nginx-proxy`
+   * [pqc-conf](/nginx-pqc/nginx_config/conf/sites-available/pqc-proxy.conf)
   * [nginx-conf](/nginx-pqc/nginx_config/conf/nginx.conf)
 * Zertifikat CN / Servername für SNI: `pqc.tls.proxy`
   * klassisch und selbstsigniert
-* KEMs
+* KEMs - [ssl-conf](/nginx-pqc/nginx_config/conf/snippets/ssl-params.conf)
   * Post-Quantum: `X25519MLKEM768`
   * Klassisch: `X25519`
 * OpenSSL-Version

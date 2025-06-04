@@ -6,7 +6,7 @@ Dieses Dokument protokolliert die Testergebnisse des hybriden Post-Quantum Nginx
   * [pqc-conf](/nginx-pqc/nginx_config/conf/sites-available/pqc-proxy.conf)
   * [nginx-conf](/nginx-pqc/nginx_config/conf/nginx.conf)
 * Zertifikat CN / Servername für SNI: `pqc.tls.proxy`
-  * klassisch und selbstsigniert
+  * [Zertifikat](/nginx-pqc/nginx_config/ssl) klassisch und selbst signiert
 * KEMs - [ssl-conf](/nginx-pqc/nginx_config/conf/snippets/ssl-params.conf)
   * Post-Quantum: `X25519MLKEM768`
   * Klassisch: `X25519`
@@ -72,7 +72,7 @@ Die Zeile Negotiated TLS1.3 group: `X25519MLKEM768` belegt eindeutig, dass der f
 
 Gleichzeitig wurde die Verbindung über das moderne Protokoll TLSv1.3 mit der starken Cipher Suite `TLS_AES_256_GCM_SHA384` aufgebaut. Die Authentifizierung des Servers erfolgte, wie beabsichtigt, über ein klassisches 2048-Bit-RSA-Zertifikat. 
 
-Der erwartete Verifizierungsfehler (Verify return code: 18) resultiert aus der Verwendung eines selbstsignierten Zertifikats in der Testumgebung und beeinträchtigt nicht die Gültigkeit des Handshake-Tests.
+Der erwartete Verifizierungsfehler (Verify return code: 18) resultiert aus der Verwendung eines selbst signierten Zertifikats in der Testumgebung und beeinträchtigt nicht die Gültigkeit des Handshake-Tests.
 
 ### 1.2 `curl` Test
 
@@ -80,13 +80,13 @@ Der erwartete Verifizierungsfehler (Verify return code: 18) resultiert aus der V
 Das Ziel dieses Tests war es, die Ende-zu-Ende-Konnektivität mit einem Standard-HTTP-Client (curl) zu verifizieren. Es sollte nachgewiesen werden, dass der Proxy eine TLS-Verbindung terminieren und Anfragen eines pq-fähigen Clients korrekt zum Backend weiterleiten kann.
 
 #### 1.2.2 Methode
-Innerhalb des client-pqc Docker-Containers wurde curl im Verbose-Modus (-v) ausgeführt, Die Option -k wurde verwendet, um die Zertifikatsprüfung aufgrund des selbstsignierten Zertifikats zu deaktivieren. Der Befehl lautete:
+Innerhalb des client-pqc Docker-Containers wurde curl im Verbose-Modus (-v) ausgeführt, Die Option -k wurde verwendet, um die Zertifikatsprüfung aufgrund des selbst signierten Zertifikats zu deaktivieren. Der Befehl lautete:
 ```bash
 curl -v https://nginx-proxy -k
 ```
 
 #### 1.2.2 Ergebnis
-Der Test war erfolgreich. Die [Ausgabe](testergebnisse/curl-pq-client.txt) von curl zeigt eine erfolgreich aufgebautet TLS-Verbindung und eine HTTP/1.1 200 OK Antwort vom Server. Die gekürzte Ausgabe zeigt die wesentlichen Schritte:
+Der Test war erfolgreich. Die [Ausgabe](testergebnisse/curl-pq-client.txt) von curl zeigt eine erfolgreich aufgebaute TLS-Verbindung und eine HTTP/1.1 200 OK Antwort vom Server. Die gekürzte Ausgabe zeigt die wesentlichen Schritte:
 ```
 * Connected to nginx-proxy (172.19.0.2) port 443 (#0)
 * SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
@@ -108,7 +108,7 @@ Der Test war erfolgreich. Die [Ausgabe](testergebnisse/curl-pq-client.txt) von c
 #### 1.2.3 Analyse
 Das Ergebnis demonstriert die funktionale Korrektheit des Reverse-Proxy-Setups. Ein Standard-Client wie curl kann sich erfolgreich über TLS 1.3 verbinden und Daten mit dem Backend austauschen.
 
-Die Verwendung der Option -k war notwendig, da das Test-Setup ein selbstsigniertes Zertifikat nutzt, dessen Aussteller (issuer) dem Client unbekannt ist. Zudem umgeht -k den Hostname-Mismatch-Fehler, der auftritt, weil der Client den Host nginx-proxy anfragt, das Zertifikat aber auf pqc.tls.proxy ausgestellt ist.
+Die Verwendung der Option -k war notwendig, da das Test-Setup ein selbst signiertes Zertifikat nutzt, dessen Aussteller (issuer) dem Client unbekannt ist. Zudem umgeht -k den Hostname-Mismatch-Fehler, der auftritt, weil der Client den Host nginx-proxy anfragt, das Zertifikat aber auf pqc.tls.proxy ausgestellt ist.
 
 Wichtig ist, dass curl selbst nicht direkt anzeigt, welcher Key Exchange Mechanism (KEM) verwendet wurde. Um nachzuweisen, dass bei dieser curl-Anfrage vom PQC-Client tatsächlich der hybride KEM X25519MLKEM768 zum Einsatz kam, muss dieses Ergebnis mit der Analyse der Nginx Access Logs (siehe letzte Zeile aus [Ausgabe](testergebnisse/curl-pq-client.txt)) korreliert werden. Der Logeintrag bestätigt serverseitig, welcher KEM für die Verbindung von der IP-Adresse des client-pqc Containers ausgehandelt wurde.
 
@@ -155,7 +155,7 @@ Die Zeile Server Temp Key: X25519, 253 bits ist der entscheidende Nachweis dafü
 
 Gleichzeitig wurde die Verbindung, wie erwartet, über das moderne Protokoll TLS 1.3 mit einer starken Cipher Suite (TLS_AES_256_GCM_SHA384) gesichert. Die Authentifizierung des Servers erfolgte, wie beabsichtigt, über ein klassisches 2048-Bit-RSA-Zertifikat.
 
-Der erwartete Verifizierungsfehler (Verify return code: 18) resultiert aus der Verwendung eines selbstsignierten Zertifikats in der Testumgebung und beeinträchtigt nicht die Gültigkeit des Handshake-Tests.
+Der erwartete Verifizierungsfehler (Verify return code: 18) resultiert aus der Verwendung eines selbst signierten Zertifikats in der Testumgebung und beeinträchtigt nicht die Gültigkeit des Handshake-Tests.
 
 ### 2.2 `curl` Test
 
@@ -163,13 +163,13 @@ Der erwartete Verifizierungsfehler (Verify return code: 18) resultiert aus der V
 Das Ziel dieses Tests war es, die Ende-zu-Ende-Konnektivität mit einem Standard-HTTP-Client (curl) zu verifizieren. Es sollte nachgewiesen werden, dass der Proxy eine TLS-Verbindung terminieren und Anfragen eines klassischen Clients korrekt zum Backend weiterleiten kann.
 
 #### 2.2.2 Methode
-Innerhalb des client-classic Docker-Containers wurde curl im Verbose-Modus (-v) ausgeführt, Die Option -k wurde verwendet, um die Zertifikatsprüfung aufgrund des selbstsignierten Zertifikats zu deaktivieren. Der Befehl lautete:
+Innerhalb des client-classic Docker-Containers wurde curl im Verbose-Modus (-v) ausgeführt, Die Option -k wurde verwendet, um die Zertifikatsprüfung aufgrund des selbst signierten Zertifikats zu deaktivieren. Der Befehl lautete:
 ```bash
 curl -v https://nginx-proxy -k
 ```
 
 #### 2.2.2 Ergebnis
-Der Test war erfolgreich. Die [Ausgabe](testergebnisse/curl-classic-client.txt) von curl zeigt eine erfolgreich aufgebautet TLS-Verbindung und eine HTTP/1.1 200 OK Antwort vom Server. Die gekürzte Ausgabe zeigt die wesentlichen Schritte:
+Der Test war erfolgreich. Die [Ausgabe](testergebnisse/curl-classic-client.txt) von curl zeigt eine erfolgreich aufgebaute TLS-Verbindung und eine HTTP/1.1 200 OK Antwort vom Server. Die gekürzte Ausgabe zeigt die wesentlichen Schritte:
 ```
 * Connected to nginx-proxy (172.20.0.2) port 443 (#0)
 * SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
@@ -191,7 +191,7 @@ Der Test war erfolgreich. Die [Ausgabe](testergebnisse/curl-classic-client.txt) 
 #### 2.2.3 Analyse
 Dieses Ergebnis bestätigt die vollständige funktionale Interoperabilität des Reverse-Proxy-Setups. Ein HTTP-Client ohne PQC-Fähigkeiten kann den gesamten Kommunikationsweg (Client → Proxy → Backend → Client) erfolgreich durchlaufen.
 
-Die Verwendung der Option -k war notwendig, da das Test-Setup ein selbstsigniertes Zertifikat nutzt, dessen Aussteller (issuer) dem Client unbekannt ist. Zudem umgeht -k den Hostname-Mismatch-Fehler, der auftritt, weil der Client den Host nginx-proxy anfragt, das Zertifikat aber auf pqc.tls.proxy ausgestellt ist.
+Die Verwendung der Option -k war notwendig, da das Test-Setup ein selbst signiertes Zertifikat nutzt, dessen Aussteller (issuer) dem Client unbekannt ist. Zudem umgeht -k den Hostname-Mismatch-Fehler, der auftritt, weil der Client den Host nginx-proxy anfragt, das Zertifikat aber auf pqc.tls.proxy ausgestellt ist.
 
 Wichtig ist, dass curl selbst nicht direkt anzeigt, welcher Key Exchange Mechanism (KEM) verwendet wurde. Um nachzuweisen, dass bei dieser curl-Anfrage vom klassischen Client tatsächlich der klassische KEM X25519 zum Einsatz kam, muss dieses Ergebnis mit der Analyse der Nginx Access Logs (siehe letzte Zeile aus [Ausgabe](testergebnisse/curl-classic-client.txt)) korreliert werden. Der Logeintrag bestätigt serverseitig, welcher KEM für die Verbindung von der IP-Adresse des client-pqc Containers ausgehandelt wurde.
 
@@ -211,63 +211,48 @@ openssl s_time -connect nginx-proxy:443 -www / -new -time 60
 ### 3.2 Messergebnisse
 Die durchgeführten Tests ergaben die folgenden Performance-Werte.
 
-| Metrik                            | Klassischer Handshake (OpenSSL 3.0.2) | Hybrider PQC-Handshake (OpenSSL 3.5.0)       | Veränderung |
-|:----------------------------------|:--------------------------------------|:---------------------------------------------|:------------|
-| **Gesamte Verbindungen (60s)**    | 19,117                                | **20,454**                                   | **+7.0 %**  |
-| **Verbindungen/Sekunde (Real)**   | **~313**                              | **~335**                                     | **+7.0 %**  |
-| **Durchschnittl. Handshake-Zeit** | ~3.19 ms                              | **~2.98 ms**                                 | **-6.6 %**  |
-| **CPU-Zeit pro Handshake**        | ~0.58 ms                              | **~0.43 ms**                                 | **-25.9 %** |
+| Metrik                          | Klassischer Handshake (OpenSSL 3.0.2) | Hybrider PQC-Handshake (OpenSSL 3.5.0) | Veränderung |
+|:--------------------------------|:--------------------------------------|:---------------------------------------|:------------|
+| **Gesamte Verbindungen (60s)**  | 19,117                                | 20,454                                 | +7.0 %      |
+| **Verbindungen/Sekunde (Real)** | ~313                                  | ~335                                   | +7.0 %      |
+| **Durchschn. Handshake-Zeit**   | ~3.19 ms                              | ~2.98 ms                               | -6.6 %      |
+| **CPU-Zeit pro Handshake**      | ~0.58 ms                              | ~0.43 ms                               | -25.9 %     |
 
 *Tabelle 3.2: Performance-Vergleich von klassischem und 
 hybridem PQC-TLS-Handshake über unterschiedliche OpenSSL-Versionen.*
 
-### 3.3 Analyse
+### 3.3 Analyse und Diskussion
 Die Messergebnisse in Tabelle 5.1 zeigen das auf den ersten Blick unerwartete Resultat, dass der TLS-Handshake mit dem hybriden PQC-Algorithmus `X25519MLKEM768` eine um etwa 7 % höhere Performance aufweist als der rein klassische Handshake.
 
-Diese Leistungssteigerung ist jedoch nicht auf den PQC-Algorithmus selbst zurückzuführen. Vielmehr verdeutlicht das Ergebnis den signifikanten Einfluss der zugrundeliegenden Kryptographie-Bibliothek und unterschiedlichen Version von OpenSSL. Der PQC-Test wurde mit einer neueren OpenSSL-Version durchgeführt, während der klassische Test auf einer älteren Version lief. Die allgemeinen Optimierungen in der neueren OpenSSL-Version sind so effektiv, dass sie den usätzlichen Rechenaufwand des Post-Quantum-Algorithmus kompensieren und im Vergleich zur älteren Bibliothek sogar zu einer besseren Gesamtperformance führen.
+Diese Leistungssteigerung ist jedoch nicht auf den PQC-Algorithmus selbst zurückzuführen. Vielmehr verdeutlicht das Ergebnis den signifikanten Einfluss der zugrundeliegenden Kryptografie-Bibliothek und unterschiedlichen Version von OpenSSL. Der PQC-Test wurde mit der neuesten OpenSSL-Version (3.5.0, Stand April 2025) durchgeführt, während der klassische Test auf einer älteren Version (3.0.2) lief. Die allgemeinen Optimierungen in der neueren OpenSSL-Version sind so effektiv, dass sie den zusätzlichen Rechenaufwand des Post-Quantum-Algorithmus kompensieren und im Vergleich sogar zu einer besseren Gesamtperformance führen.
 
 **Fazit:** Der Einsatz von PQC muss nicht zwangsläufig zu einem Performance-Verlust führen, wenn er im Rahmen einer Aktualisierung auf eine moderne, hoch-optimierte Krypto-Bibliothek erfolgt.
 
 ## 4. Performance-Analyse: PQC-Overhead
 
-Um den reinen Performance-Overhead des Post-Quantum-Algorithmus zu isolieren, 
-wurde ein direkter Vergleich auf Basis derselben Krypto-Bibliothek (OpenSSL 3.5.0) durchgeführt. 
-Dabei wurde im `client-pqc` Container einmal ein klassischer Handshake (ECDHE mit X25519) und 
-einmal ein hybrider PQC-Handshake (X25519MLKEM768) erzwungen. 
-Die Tests liefen jeweils über eine Dauer von 60 Sekunden.
+Um den reinen Performance-Overhead des Post-Quantum-Algorithmus zu isolieren, wurde ein direkter Vergleich auf Basis derselben Krypto-Bibliothek (OpenSSL 3.5.0) durchgeführt. Dabei wurde im `client-pqc` Container einmal ein klassischer Handshake (ECDHE mit X25519) und einmal ein hybrider PQC-Handshake (X25519MLKEM768) erzwungen.
 
-### 4.1 Messergebnisse des isolierten Vergleichs
+### 4.1 Methode
+Als Testwerkzeug kam ebenfalls `openssl s_time` mit einer Laufzeit von 60 Sekunden pro Testlauf zum Einsatz. Der Befehl lautete:
+```bash
+openssl s_time -connect nginx-proxy:443 -www / -new -time 60
+```
 
-| Metrik                            | Klassischer Handshake (X25519 auf neuer Lib) | Hybrider PQC-Handshake (X25519MLKEM768) | Veränderung (PQC-Overhead) |
-|:----------------------------------|:---------------------------------------------|:----------------------------------------|:---------------------------|
-| **Gesamte Verbindungen (60s)**    | 20,300                                       | 18,058                                  | -11.0 %                    |
-| **Verbindungen/Sekunde (Real)**   | **~333**                                     | **~296**                                | **-11.1 %**                |
-| **Durchschnittl. Handshake-Zeit** | ~3.00 ms                                     | ~3.38 ms                                | +12.7 %                    |
-| **CPU-Zeit pro Handshake**        | ~0.42 ms                                     | ~0.50 ms                                | +19.0 %                    |
+### 4.2 Messergebnisse des isolierten Vergleichs
 
-*Tabelle 5.1: Direkter Performance-Vergleich zur Ermittlung des PQC-Overheads.*
+| Metrik                          | Klassischer Handshake (X25519 auf neuer Lib) | Hybrider PQC-Handshake (X25519MLKEM768) | Veränderung (PQC-Overhead) |
+|:--------------------------------|:---------------------------------------------|:----------------------------------------|:---------------------------|
+| **Gesamte Verbindungen (60s)**  | 20,300                                       | 18,058                                  | -11.0 %                    |
+| **Verbindungen/Sekunde (Real)** | ~333                                         | ~296                                    | -11.1 %                    |
+| **Durchschn. Handshake-Zeit**   | ~3.00 ms                                     | ~3.38 ms                                | +12.7 %                    |
+| **CPU-Zeit pro Handshake**      | ~0.42 ms                                     | ~0.50 ms                                | +19.0 %                    |
 
-### 4.2 Analyse und Diskussion
+*Tabelle 4.2: Direkter Performance-Vergleich zur Ermittlung des PQC-Overheads.*
 
-Der direkte Vergleich unter Verwendung derselben optimierten 
-OpenSSL-Bibliothek ermöglicht eine präzise Quantifizierung 
-des durch den PQC-Algorithmus verursachten Overheads.
+### 4.3 Analyse und Diskussion
 
-Der Test des klassischen Handshakes mit X25519 erreichte 
-**ca. 333 Verbindungen pro Sekunde** und dient als präzise Baseline. 
-Im Vergleich dazu erreichte der hybride Handshake mit X25519MLKEM768 
-**ca. 296 Verbindungen pro Sekunde**. Dies entspricht einer 
-**Performance-Reduzierung von ca. 11,1 %**.
+Der Test des klassischen Handshakes mit `X25519` erreichte **ca. 333 Verbindungen pro Sekunde** und dient als präzise Baseline. Im Vergleich dazu erreichte der hybride Handshake mit `X25519MLKEM768` **ca. 296 Verbindungen pro Sekunde**. Dies entspricht einer **Performance-Reduzierung von ca. 11,1 %**.
 
-Dieser messbare Overhead ist direkt auf die zusätzlichen 
-kryptographischen Berechnungen des ML-KEM-Algorithmus zurückzuführen. 
-Die reine CPU-Zeit pro Handshake erhöhte sich um ca. 19 %, was den 
-höheren Rechenaufwand verdeutlicht. Dieser "Preis" für die quantenresistente 
-Absicherung der Vertraulichkeit gegen zukünftige "Harvest Now, 
-Decrypt Later"-Angriffe ist ein entscheidender Faktor bei der Planung von Migrationen.
+Dieser messbare Overhead ist direkt auf die zusätzlichen kryptografischen Berechnungen des ML-KEM-Algorithmus zurückzuführen. Die reine CPU-Zeit pro Handshake erhöhte sich um ca. 19 %, was den höheren Rechenaufwand verdeutlicht. Dieser "Preis" für die quanten resistente Absicherung der Vertraulichkeit gegen zukünftige "Harvest Now, Decrypt Later"-Angriffe ist ein entscheidender Faktor bei der Planung von Migrationen.
 
-Ein Overhead von ca. 11 % im Verbindungsaufbau kann für die meisten Webanwendungen 
-als akzeptabel angesehen werden, insbesondere da er nur den einmaligen Handshake 
-betrifft und nicht den Datendurchsatz bestehender Verbindungen. Die Ergebnisse zeigen, 
-dass eine Migration zu hybrider Post-Quantum-Kryptographie mit einem überschaubaren 
-und klar messbaren Performance-Aufwand möglich ist.
+Ein Overhead von ca. 11 % im Verbindungsaufbau kann für die meisten Webanwendungen als akzeptabel angesehen werden, insbesondere da er nur den einmaligen Handshake betrifft und nicht den Datendurchsatz bestehender Verbindungen. Die Ergebnisse zeigen, dass eine Migration zu hybrider PQC mit einem überschaubaren und klar messbaren Performance-Aufwand möglich ist.

@@ -207,7 +207,7 @@ Die durchgeführten Tests ergaben die folgenden Performance-Werte.
 | **Durchschn. Handshake-Zeit**   | ~3.19 ms                              | ~2.98 ms                               | -6.6 %      |
 | **CPU-Zeit pro Handshake**      | ~0.58 ms                              | ~0.43 ms                               | -25.9 %     |
 
-*Tabelle 3.2: Performance-Vergleich von klassischem und 
+*Tabelle 3.2: Performance-Vergleich von klassischem und
 hybridem PQC-TLS-Handshake über unterschiedliche OpenSSL-Versionen.*
 
 #### 3.3 Analyse und Diskussion

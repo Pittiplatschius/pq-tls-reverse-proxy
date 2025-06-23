@@ -10,26 +10,25 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: pqc_backend
+    container_name: backend
     networks:
       - backend_net
     restart: unless-stopped
 
-  nginx-proxy:
+  nginx-proxy-oqs:
     build:
-      context: ./nginx-pqc
+      context: nginx-oqs
       dockerfile: Dockerfile
       args:
         OPENSSL_VERSION: 3.5.0
         NGINX_VERSION: 1.28.0
-    container_name: pqc_nginx_proxy
+    container_name: nginx_proxy_oqs
     ports:
-      - "80:80"
-      - "443:443"
+      - "4443:443"
     volumes:
-      - ./nginx-pqc/nginx_config/conf:/etc/nginx-pq # Nginx Hauptkonfigurationen
-      - ./nginx-pqc/nginx_config/ssl:/etc/nginx-pq/ssl:ro # Zertifikate read-only mounten
-      - ./nginx-pqc/logs:/var/log/nginx-pq # Optional: Logs auf Host mappen
+      - ./nginx-oqs/nginx_config/conf:/etc/nginx-oqs
+      - ./nginx-oqs/nginx_config/ssl:/etc/nginx-oqs/ssl:ro
+      - ./nginx-oqs/logs:/var/log/nginx-oqs
     networks:
       - frontend_net
       - backend_net
@@ -37,32 +36,32 @@ services:
       - backend-server
     restart: unless-stopped
 
-  client-pqc:
+  client-oqs:
     build:
-      context: ./client-pqc
+      context: client-oqs
       dockerfile: Dockerfile
       args:
         OPENSSL_VERSION: 3.5.0
-    container_name: pqc_client_pqc
-    volumes: # Mounten Sie das generierte Zertifikat, damit curl es verwenden kann
-      - ./nginx-pqc/nginx_config/ssl/server.crt:/etc/ssl/certs/proxy_server.crt:ro
+    container_name: client_oqs
+    volumes:
+      - ./nginx-oqs/nginx_config/ssl/server.crt:/etc/ssl/certs/proxy_server.crt:ro
     networks:
       - frontend_net
     depends_on:
-      - nginx-proxy
-    stdin_open: true # Hält den Container am Laufen (wie sleep infinity)
-    tty: true        # Hält den Container am Laufen
+      - nginx-proxy-oqs
+    stdin_open: true
+    tty: true
 
   client-classic:
     build:
       context: ./client-classic
       dockerfile: Dockerfile
-    container_name: pqc_client_classic
-    volumes: # Mounten Sie das generierte Zertifikat, damit curl es verwenden kann
-      - ./nginx-pqc/nginx_config/ssl/server.crt:/etc/ssl/certs/proxy_server.crt:ro
+    container_name: client_classic
+    volumes:
+      - ./nginx-oqs/nginx_config/ssl/server.crt:/etc/ssl/certs/proxy_server.crt:ro
     networks:
       - frontend_net
     depends_on:
-      - nginx-proxy
-    stdin_open: true # Hält den Container am Laufen
-    tty: true        # Hält den Container am Laufen
+      - nginx-proxy-oqs
+    stdin_open: true
+    tty: true

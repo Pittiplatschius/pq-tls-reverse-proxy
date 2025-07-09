@@ -70,6 +70,7 @@ RUN mkdir -p /var/log/nginx-pq && \
 EXPOSE 80 443
 
 # Set environment variables for the custom OpenSSL (for Nginx runtime if needed, usually linked)
+ENV PATH=${OPENSSL_PREFIX}/bin:$PATH
 ENV LD_LIBRARY_PATH=${OPENSSL_PREFIX}/lib64:$LD_LIBRARY_PATH
 
 # Command to run Nginx in the foreground

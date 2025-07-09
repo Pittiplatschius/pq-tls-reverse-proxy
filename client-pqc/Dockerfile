@@ -35,14 +35,11 @@ RUN cd /usr/local/src && \
 
 # Set environment variables for the custom OpenSSL
 ENV PATH=${OPENSSL_PREFIX}/bin:$PATH
-# ENV LD_LIBRARY_PATH=${OPENSSL_PREFIX}/lib64:$LD_LIBRARY_PATH
 # dynamic lib env for windows,unix and mac
 ENV LD_LIBRARY_PATH=${OPENSSL_PREFIX}/lib:${OPENSSL_PREFIX}/lib64:$LD_LIBRARY_PATH
 
 # Verify installation
 RUN openssl version
 
-# Kopieren Sie das Server-Zertifikat, um es für curl-Tests zu verwenden (optional, für --cacert)
-# COPY ./nginx-pqc/nginx_config/ssl/server.crt /etc/ssl/certs/proxy_server.crt
 
 CMD ["sleep", "infinity"]

@@ -1,0 +1,30 @@
+******************************************************************
+pqc-client
+******************************************************************
+
+root@a3888900e636:/# wrk -t4 -c500 -d60s https://nginx-proxy:443
+Running 1m test @ https://nginx-proxy:443
+  4 threads and 500 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   441.60ms  365.93ms   2.00s    90.12%
+    Req/Sec    85.87     44.73   313.00     60.43%
+  19711 requests in 1.00m, 7.58MB read
+  Socket errors: connect 0, read 0, write 0, timeout 1875
+Requests/sec:    328.06
+Transfer/sec:    129.11KB
+
+******************************************************************
+classic-client
+******************************************************************
+
+root@ab466e19fa74:/# wrk -t4 -c500 -d60s https://nginx-proxy:443
+Running 1m test @ https://nginx-proxy:443
+  4 threads and 500 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   447.05ms  347.41ms   2.00s    89.92%
+    Req/Sec    82.04     49.88   393.00     64.03%
+  18860 requests in 1.00m, 7.24MB read
+  Socket errors: connect 0, read 0, write 0, timeout 1723
+  Non-2xx or 3xx responses: 66
+Requests/sec:    313.85
+Transfer/sec:    123.42KB

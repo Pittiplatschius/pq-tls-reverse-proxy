@@ -9,6 +9,15 @@ RUN apt-get update && \
     dnsutils \
     net-tools \
     ca-certificates \
+    build-essential \
+    git \
+    wget \
+    unzip \
+    luajit \
     && rm -rf /var/lib/apt/lists/*
+
+# wrk installieren
+RUN git clone https://github.com/wg/wrk.git /tmp/wrk && \
+    cd /tmp/wrk && make && mv wrk /usr/local/bin && rm -rf /tmp/wrk \
 
 CMD ["sleep", "infinity"]

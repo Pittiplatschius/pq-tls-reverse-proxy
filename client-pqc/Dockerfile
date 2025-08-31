@@ -20,6 +20,8 @@ RUN apt-get update && \
     dnsutils \
     net-tools \
     ca-certificates \
+    unzip \
+    luajit \
     && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
@@ -41,5 +43,8 @@ ENV LD_LIBRARY_PATH=${OPENSSL_PREFIX}/lib:${OPENSSL_PREFIX}/lib64:$LD_LIBRARY_PA
 # Verify installation
 RUN openssl version
 
+# wrk installieren
+RUN git clone https://github.com/wg/wrk.git /tmp/wrk && \
+    cd /tmp/wrk && make && mv wrk /usr/local/bin && rm -rf /tmp/wrk
 
 CMD ["sleep", "infinity"]
